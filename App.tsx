@@ -1,22 +1,50 @@
 import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
+import { STORAGE_ENTRIES_KEY, TrackingProvider } from './services/useTracking';
+import './services/i18n.js'
+
+import { enableScreens } from 'react-native-screens';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TrackingEntry } from './types/tracking';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
+  const [initialEntries, setInitialEntries] = useState<null | TrackingEntry[]>(null);
 
-  if (!isLoadingComplete) {
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_ENTRIES_KEY).then(entries => {
+      try {
+        if(entries === null) {
+          setInitialEntries([]);
+          AsyncStorage.setItem(STORAGE_ENTRIES_KEY, JSON.stringify([]));
+          console.log('entires were null, set to []')
+        } else {
+          setInitialEntries(JSON.parse(entries));
+          console.log('loaded', JSON.parse(entries).length)
+        }
+      } catch(e) {
+        console.error('loading error')
+      }
+    })
+  }, [])
+
+  enableScreens();
+
+  if (!isLoadingComplete || initialEntries === null) {
     return null;
   } else {
     return (
       <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
+        <TrackingProvider initialEntries={initialEntries}>
+          <Navigation colorScheme={colorScheme} />
+        </TrackingProvider>
         <StatusBar />
       </SafeAreaProvider>
     );

@@ -1,40 +1,57 @@
-/**
- * Learn more about createBottomTabNavigator:
- * https://reactnavigation.org/docs/bottom-tab-navigator
- */
-
-import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import TabOneScreen from '../screens/TabOneScreen';
-import TabTwoScreen from '../screens/TabTwoScreen';
+import OverviewScreen from '../screens/OverviewScreen';
+import CalendarScreenFull from '../screens/CalendarScreenFull';
+import CalendarQuickScreen from '../screens/CalendarQuickScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import TrackScreen from '../screens/TrackScreen';
 import { BottomTabParamList, TabOneParamList, TabTwoParamList } from '../types';
+import { Ionicons, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTracking } from '../services/useTracking';
+import { View, Button, Pressable, Text } from 'react-native';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
-export default function BottomTabNavigator() {
+export default function BottomTabNavigator({ navigation }) {
   const colorScheme = useColorScheme();
+  const tracking = useTracking();
 
   return (
     <BottomTab.Navigator
-      initialRouteName="TabOne"
-      tabBarOptions={{ activeTintColor: Colors[colorScheme].tint }}>
+      initialRouteName="Overview"
+      tabBarOptions={{ 
+        activeTintColor: Colors[colorScheme].tint 
+      }}>
       <BottomTab.Screen
-        name="TabOne"
-        component={TabOneNavigator}
+        name="Overview"
+        component={OverviewScreenNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="power-cycle" size={24} color={Colors[colorScheme].text} />,
+        }}
+      />
+      {/* <BottomTab.Screen
+        name="Track"
+        component={TabTwoNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <AntDesign name="pluscircle" size={30} color={Colors.light.red[1]} />,
+        }}
+      /> */}
+      <BottomTab.Screen
+        name="Calendar"
+        component={CalendarScreenFullNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <AntDesign name="calendar" size={24} color={Colors[colorScheme].text} />,
         }}
       />
       <BottomTab.Screen
-        name="TabTwo"
-        component={TabTwoNavigator}
+        name="Settings"
+        component={SettingsScreenNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="cog" size={24} color={Colors[colorScheme].text} />,
         }}
       />
     </BottomTab.Navigator>
@@ -51,13 +68,15 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof Ionicons>['name']
 // https://reactnavigation.org/docs/tab-based-navigation#a-stack-navigator-for-each-tab
 const TabOneStack = createStackNavigator<TabOneParamList>();
 
-function TabOneNavigator() {
+function CalendarScreenFullNavigator({ navigation }) {
   return (
     <TabOneStack.Navigator>
       <TabOneStack.Screen
-        name="TabOneScreen"
-        component={TabOneScreen}
-        options={{ headerTitle: 'Tab One Title' }}
+        name="CalendarScreenFull"
+        component={CalendarScreenFull}
+        options={{ 
+          headerTitle: `Calendar`,
+        }}
       />
     </TabOneStack.Navigator>
   );
@@ -66,12 +85,62 @@ function TabOneNavigator() {
 const TabTwoStack = createStackNavigator<TabTwoParamList>();
 
 function TabTwoNavigator() {
+ 
   return (
     <TabTwoStack.Navigator>
       <TabTwoStack.Screen
-        name="TabTwoScreen"
-        component={TabTwoScreen}
-        options={{ headerTitle: 'Tab Two Title' }}
+        name="TrackScreen"
+        component={TrackScreen}
+        options={{ headerTitle: `Track` }}
+      />
+    </TabTwoStack.Navigator>
+  );
+}
+
+function OverviewScreenNavigator({ navigation }) {
+  const colorScheme = useColorScheme();
+  const tracking = useTracking()
+  
+  return (
+    <TabTwoStack.Navigator mode="modal">
+      <TabTwoStack.Screen
+        name="OverviewScreen"
+        component={OverviewScreen}
+        options={{ 
+          headerTitle: 'Overview',
+          headerRight: () => (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Pressable onPress={() => navigation.navigate('CalendarQuickScreen')}>
+                <Text style={{ fontSize: 15, paddingLeft: 10, paddingRight: 10, marginRight: 10 }}>Add Period</Text>
+              </Pressable>
+            </View>
+          ),
+        }}
+      />
+      <TabOneStack.Screen
+        name="CalendarQuickScreen"
+        component={CalendarQuickScreen}
+        options={{ 
+          headerTitle: `Add Period`,
+          headerLeft: () => {},
+          headerRight: () => (
+            <Pressable style={{ padding: 5, borderRadius: 5, marginRight: 10, backgroundColor: '#EEE' }} onPress={() => navigation.navigate('OverviewScreen')}>
+              <AntDesign name="close" size={24} color={'grey'} />
+            </Pressable>
+          ),
+        }}
+      />
+    </TabTwoStack.Navigator>
+  );
+}
+
+function SettingsScreenNavigator() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{ headerTitle: 'Settings' }}
       />
     </TabTwoStack.Navigator>
   );
