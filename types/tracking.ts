@@ -79,6 +79,7 @@ export enum CYCLE_STATUSES {
   FERTILITY_WINDOW = 3,
   OVULATION = 4,
   PRE_MENSTRUATION = 5,
+  MENSTRUATION_LATE = 6,
 }
 
 export enum FERTILITY_LEVEL {
@@ -87,6 +88,7 @@ export enum FERTILITY_LEVEL {
   LESS = 2,
   POSSIBLE = 3,
   MOST = 4,
+  LIKELY = 5,
 }
 
 export enum CYCLE_LENGTH_STATUS {

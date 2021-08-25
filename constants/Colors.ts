@@ -1,8 +1,6 @@
 const tintColorLight = '';
 const tintColorDark = '#fff';
 
-// generate https://components.ai/theme/8ihXExU6zplhJckrbhOD?tab=create
-
 let Colors = {
   light: {
     text: '#000',
@@ -11,17 +9,17 @@ let Colors = {
     tabIconDefault: '#ccc',
     tabIconSelected: tintColorLight,
 
-      blue: [
-        "#cfe2ff",
-        "#9ec5fe",
-        "#6ea8fe",
-        "#3d8bfd",
-        "hsl(215.75,98.36%,52.16%)",
-        "#0a58ca",
-        "#084298",
-        "#052c65",
-        "#031633",
-      ],
+      // blue: [
+      //   "#cfe2ff",
+      //   "#9ec5fe",
+      //   "#6ea8fe",
+      //   "#3d8bfd",
+      //   "hsl(215.75,98.36%,52.16%)",
+      //   "#0a58ca",
+      //   "#084298",
+      //   "#052c65",
+      //   "#031633",
+      // ],
       indigo: [
         "hsl(262.67,88.24%,90%)",
         "hsl(263.08,90.1%,80.2%)",
@@ -55,17 +53,17 @@ let Colors = {
         "hsl(330,62.26%,20.78%)",
         "hsl(330.91,62.26%,10.39%)",
       ],
-      red: [
-        "hsl(354.55,70.21%,90.78%)",
-        "hsl(353.73,70.53%,81.37%)",
-        "hsl(354.6,70.42%,72.16%)",
-        "hsl(354.18,70.53%,62.75%)",
-        "hsl(354.25,70.46%,53.53%)",
-        "hsl(354.18,61.47%,42.75%)",
-        "hsl(354.6,60.98%,32.16%)",
-        "hsl(353.73,61.47%,21.37%)",
-        "hsl(354.55,60%,10.78%)",
-      ],
+      // red: [
+      //   "hsl(354.55,70.21%,90.78%)",
+      //   "hsl(353.73,70.53%,81.37%)",
+      //   "hsl(354.6,70.42%,72.16%)",
+      //   "hsl(354.18,70.53%,62.75%)",
+      //   "hsl(354.25,70.46%,53.53%)",
+      //   "hsl(354.18,61.47%,42.75%)",
+      //   "hsl(354.6,60.98%,32.16%)",
+      //   "hsl(353.73,61.47%,21.37%)",
+      //   "hsl(354.55,60%,10.78%)",
+      // ],
       orange: [
         "hsl(26.81,100%,90.78%)",
         "hsl(27.1,97.89%,81.37%)",
@@ -133,20 +131,21 @@ let Colors = {
         "hsl(210,10.81%,14.51%)",
       ],
 
-    // red: [
-    //   "#EF504A", // L
-    //   "#EF6560", // M
-    //   "#FDE6E1", // S
-    // ],
-    // blue: [
-    //   "#1890FF", // L
-    //   "#69C0FF",
-    //   "#BAE7FF",
-    // ],
+    red: [
+      "#EF504A", // L
+      "#EF6560", // M
+      "#FDE6E1", // S
+    ],
+    blue: [
+      "#1890FF", // L
+      "#69C0FF",
+      "#BAE7FF",
+    ],
     darkblue: [
       "#003A8C", // L
       "#385B8C",
       "#BBCAE0",
+      "#DAE3F0",
     ],
     // orange: [
     //   "#FA8C16", // L
@@ -170,6 +169,7 @@ let Colors = {
       fertilityPrediction: "",
       ovulationPrediction: "",
       pmsPrediction: "",
+      fertility: "",
     }
   },
   dark: {
@@ -182,11 +182,12 @@ let Colors = {
 };
 
 Colors.light.codes = {
-  period: Colors.light.red[4],
-  periodPrediction: Colors.light.red[0],
-  fertilityPrediction: Colors.light.blue[0],
-  ovulationPrediction: Colors.light.blue[1],
-  pmsPrediction: Colors.light.yellow[1],
+  period: Colors.light.red[1],
+  periodPrediction: Colors.light.red[2],
+  fertilityPrediction: Colors.light.darkblue[3],
+  ovulationPrediction: Colors.light.darkblue[1],
+  pmsPrediction: Colors.light.yellow[0],
+  fertility: Colors.light.darkblue[0],
 }
 
 Colors.light.trackingOptions = {

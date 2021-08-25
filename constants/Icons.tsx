@@ -40,5 +40,11 @@ export const get = (type: string, props = {}) => {
     case `tracking_option_emotion_4`:
       return <FontAwesome5 name="cloud-rain" color={Colors.light.trackingOptions.emotion} {...props} />
 
+    case `common_fertility`: 
+      return <FontAwesome5 name="feather" color={Colors.light.codes.fertility} {...props} />
+    case `common_period`: 
+      return <Fontisto name="blood-drop" color={Colors.light.codes.period} {...props} />
+    case `common_pms`: 
+      return <Entypo name="cloud" color={Colors.light.codes.pmsPrediction} {...props} />
   }
 }

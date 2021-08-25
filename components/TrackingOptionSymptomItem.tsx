@@ -13,7 +13,7 @@ export default function TrackingOptionSymptomItem({ type, symptoms }) {
   return (
     <View key={key} style={styles.container}>
       <View style={[styles.iconContainer, { borderColor: Colors.light.trackingOptions[symptom_type_key] }]}>{get(key, { size: 16 })}</View>
-      <Text style={[styles.text]}>{t(key)}</Text>
+      <Text style={[styles.text]}>{t(`common_${key}`)}</Text>
     </View>
   );
 }

@@ -4,7 +4,6 @@ import {
   PMSPredition, 
   FertilityPrediction, 
   PeriodPrediction,
-  PredictionType
 } from '../types/tracking'
 
 export const getEntryDots = (entries: TrackingEntry[]) => {

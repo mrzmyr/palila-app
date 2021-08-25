@@ -1,4 +1,5 @@
-import { addDays, differenceInCalendarDays, format, isAfter, isBefore, isEqual, isWithinInterval, subDays } from 'date-fns';
+import { addDays, differenceInCalendarDays, isAfter, isBefore, isWithinInterval, subDays } from 'date-fns';
+import { format } from '../services/i18n';
 
 import { 
   PeriodPrediction,
@@ -17,14 +18,14 @@ import {
 const DATE_FORMAT = 'yyyy-MM-dd';
 
 const MAX_PERIOD_BREAK = 2;
-const MIN_LENGTH_PERIOD = 3;
+const MIN_LENGTH_PERIOD = 2;
 const MIN_CYCLE_DISTANCE = 10;
 
 const FERTILE_WINDOW_BEFORE_OVULATION = 5;
 const FERTILE_WINDOW_AFTER_OVULATION = 2;
 
-const AVG_CYCLE_LENGTH = 28;
-const AVG_PERIOD_LENGTH = 5;
+export const AVG_CYCLE_LENGTH = 28;
+export const AVG_PERIOD_LENGTH = 5;
 const PMS_BEFORE_PERIOD = 3;
 
 // Period Windows
@@ -109,7 +110,8 @@ export const getCycleLengthStatus = (cycleLength: number) => {
 
 export const getAveragePeriodLength = (periodWindows: TrackingEntry[][]): number => {
   if(periodWindows.length < 2) return AVG_PERIOD_LENGTH;
-  return Math.round(periodWindows.map(pw => pw.length).reduce((acc, c) => acc + c, 0) / periodWindows.length);
+  let limitedPeriodWindows = periodWindows.slice(-3);
+  return Math.round(limitedPeriodWindows.map(pw => pw.length).reduce((acc, c) => acc + c, 0) / limitedPeriodWindows.length);
 }
 
 export const getPeriodLengthStatus = (periodLength: number) => {
@@ -207,9 +209,10 @@ export const getFertilityStatus = (date: Date, periodWindows: TrackingEntry[][],
 
   let cycleDayOvulation = differenceInCalendarDays(new Date(ovulationDate), new Date(periodStartDate)) + 1;
   let cycleDayPeriodEnd = differenceInCalendarDays(new Date(periodEndDate), new Date(periodStartDate)) + 1
-
+  
   if(currentCycleStatus === CYCLE_STATUSES.MENSTRUATION) return FERTILITY_LEVEL.LEAST;
-  if(currentCycleDay > cycleDayPeriodEnd && currentCycleDay <= cycleDayOvulation - 3) return FERTILITY_LEVEL.POSSIBLE;
+  if(currentCycleStatus === CYCLE_STATUSES.POST_MENSTRUATION) return FERTILITY_LEVEL.POSSIBLE;
+  if(currentCycleStatus === CYCLE_STATUSES.FERTILITY_WINDOW) return FERTILITY_LEVEL.LIKELY;
   if(currentCycleDay >= cycleDayOvulation - 2 && currentCycleDay <= cycleDayOvulation) return FERTILITY_LEVEL.MOST;
 
   if(currentCycleDay > cycleDayOvulation && currentCycleDay <= cycleDayOvulation + 2) return FERTILITY_LEVEL.POSSIBLE;
@@ -249,11 +252,16 @@ export const getDayStatus = (date: Date, entries: TrackingEntry[], periodWindows
   
   let periodPredictionCurrentCycle = getPeriodPredictionCurrentCycle(periodStartDate, periodLength);
   let periodPredictionNextCycle = getPeriodPredictionNextCycle(periodStartDate, periodLength, cycleLength);
+  let periodPredictionNextNextCycle = getPeriodPredictionNextCycle(periodPredictionNextCycle[0].date, periodLength, cycleLength);
+  let periodPredictionNextNextNextCycle = getPeriodPredictionNextCycle(periodPredictionNextNextCycle[0].date, periodLength, cycleLength);
+
+  let pmsPredictionDates = getPMSPrediction(periodStartDate, periodLength, cycleLength).map(p => p.date);
+  let pmsPredictionDatesNext = getPMSPrediction(periodPredictionNextCycle[0].date, periodLength, cycleLength).map(p => p.date);
+  let pmsPredictionDatesNextNext = getPMSPrediction(periodPredictionNextNextCycle[0].date, periodLength, cycleLength).map(p => p.date);
   
   let fertilePredictions = getFertilityPrediction(periodStartDate, ovulationDistance);
   let fertilePredictionDates = fertilePredictions.map(p => p.date);
   let periodDates = entries.filter(p => [1,2,3].includes(p.symptoms.bleeding)).map(p => p.date);
-  let pmsPredictionDates = getPMSPrediction(periodStartDate, periodLength, cycleLength).map(p => p.date);
 
   let ovulationDay = fertilePredictions.find(p => p.fertilityType === 3);
 
@@ -266,8 +274,14 @@ export const getDayStatus = (date: Date, entries: TrackingEntry[], periodWindows
     periodPrediction: [
       ...periodPredictionCurrentCycle.map(d => d.date),
       ...periodPredictionNextCycle.map(d => d.date),
+      ...periodPredictionNextNextCycle.map(d => d.date),
+      ...periodPredictionNextNextNextCycle.map(d => d.date),
     ].includes(dateString),
-    pmsPrediction: pmsPredictionDates.includes(dateString)
+    pmsPrediction: [
+      ...pmsPredictionDates,
+      ...pmsPredictionDatesNext,
+      ...pmsPredictionDatesNextNext,
+    ].includes(dateString)
   }
 }
 
@@ -294,7 +308,16 @@ export const getCycleStatus = ({ date, periodWindows, entries, periodLength, cyc
     new Date(periodStartDate)
   );
 
-  if(dayStatus.periodPrediction || dayStatus.period) return CYCLE_STATUSES.MENSTRUATION;
+  if(dayStatus.periodPrediction || dayStatus.period) {
+    let periodPredictionNextCycle = getPeriodPredictionNextCycle(periodStartDate, periodLength, cycleLength);
+    let firstDayDateOf2ndPeriod = periodPredictionNextCycle[0].date;
+    let diff = differenceInCalendarDays(new Date(firstDayDateOf2ndPeriod), date);
+    if(diff < 0) {
+      return CYCLE_STATUSES.MENSTRUATION_LATE;
+    } else {
+      return CYCLE_STATUSES.MENSTRUATION;
+    }
+  }
   if(dayStatus.ovulationPrediciton) return CYCLE_STATUSES.OVULATION;
   if(dayStatus.fertilePrediciton) return CYCLE_STATUSES.FERTILITY_WINDOW;
   if(currentCycleDay < cycleDayOvulation) return CYCLE_STATUSES.POST_MENSTRUATION;
@@ -303,12 +326,33 @@ export const getCycleStatus = ({ date, periodWindows, entries, periodLength, cyc
   return CYCLE_STATUSES.UNKNOWN;
 }
 
-// maximum: 1 next cycle period prediction
-export const getCycleNextUp = ({ date, entries, periodWindows, periodLength, cycleLength, ovulationDistance }: {date: Date, entries: TrackingEntry[], periodWindows: TrackingEntry[][], periodLength: number, cycleLength: number, ovulationDistance: number }): [string, object] | null => {
-  
+export const getNextPeriod = ({ date, periodWindows, periodLength, cycleLength }: { date: Date, periodWindows: TrackingEntry[][], periodLength: number, cycleLength: number }) => {
+
   const periodStartDate = getPeriodStartDate(periodWindows);
 
   if(periodStartDate === null) return null;
+  
+  let periodPredictionCurrentCycle = getPeriodPredictionCurrentCycle(periodStartDate, periodLength);
+  let periodPredictionNextCycle = getPeriodPredictionNextCycle(periodStartDate, periodLength, cycleLength);
+
+  let firstDayDateOfPeriod = periodPredictionCurrentCycle[0].date;
+  let firstDayDateOf2ndPeriod = periodPredictionNextCycle[0].date;
+
+  if(isAfter(date, new Date(firstDayDateOfPeriod))) {
+    return ['period_start_in', { days: differenceInCalendarDays(new Date(firstDayDateOf2ndPeriod), date) }]
+  }
+
+  return ['period_start_in', { days: differenceInCalendarDays(new Date(firstDayDateOfPeriod), date) }]
+}
+
+// maximum: 1 next cycle period prediction
+export const getCycleNextUp = ({ date, entries, periodWindows, periodLength, cycleLength, ovulationDistance }: {date: Date, entries: TrackingEntry[], periodWindows: TrackingEntry[][], periodLength: number, cycleLength: number, ovulationDistance: number }): [string, object] | [null, null] => {
+  
+  date = new Date(format(date, DATE_FORMAT))
+  
+  const periodStartDate = getPeriodStartDate(periodWindows);
+
+  if(periodStartDate === null) return [null, null];
 
   let cycleStatus = getCycleStatus({ date, periodWindows, entries, periodLength, cycleLength, ovulationDistance })
   
@@ -324,38 +368,70 @@ export const getCycleNextUp = ({ date, entries, periodWindows, periodLength, cyc
   let firstFertileDayDate = fertilePredictions[0].date;
   let lastFertileDayDate = fertilePredictions[fertilePredictions.length - 1].date;
 
+  // console.log(date, cycleStatus)
+  
   // BETWEEN [first day of period] AND [last day of period]
   if(cycleStatus === CYCLE_STATUSES.MENSTRUATION) {
     // is first period (prediction)
     if(isWithinInterval(date, { start: new Date(firstDayDateOfPeriod), end: new Date(lastDayDateOfPeriod) })) {
-      return ['cycle_next_up_period_end', { days: differenceInCalendarDays(new Date(lastDayDateOfPeriod), date) }]
+      let diff = differenceInCalendarDays(new Date(lastDayDateOfPeriod), date);
+
+      if(diff === 1) return ['cycle_next_up_period_end_tomorrow', {}]
+      if(diff === 0) return ['cycle_next_up_period_end_today', {}]
+      
+      return ['cycle_next_up_period_end', { days: diff }]
     }
     // is second period (prediction)
     if(isWithinInterval(date, { start: new Date(firstDayDateOf2ndPeriod), end: new Date(lastDayDateOf2ndPeriod) })) {
-      return ['cycle_next_up_period_end', { days: differenceInCalendarDays(new Date(lastDayDateOf2ndPeriod), date) }]
+      let diff = differenceInCalendarDays(new Date(lastDayDateOfPeriod), date);
+
+      if(diff === 1) return ['cycle_next_up_period_end_tomorrow', {}]
+      if(diff === 0) return ['cycle_next_up_period_end_today', {}]
+      
+      return ['cycle_next_up_period_end', { days: diff }]
     }
   }
 
   // BETWEEN [first day of fertility window] AND [ovulation]
   if(cycleStatus === CYCLE_STATUSES.FERTILITY_WINDOW && isBefore(date, new Date(ovulationDayDate))) {
-    return ['cycle_next_up_ovulation_start', { days: differenceInCalendarDays(new Date(ovulationDayDate), date) }];
+    let diff = differenceInCalendarDays(new Date(ovulationDayDate), date);
+    
+    if(diff === 1) return ['cycle_next_up_ovulation_start_tomorrow', {}]
+    if(diff === 0) return ['cycle_next_up_ovulation_start_today', {}]
+    
+    return ['cycle_next_up_ovulation_start', { days: diff }]
   }
   
   // [ovulation]
   if(cycleStatus === CYCLE_STATUSES.OVULATION) {
-    return ['cycle_next_up_fertility_window_end', { days: differenceInCalendarDays(new Date(lastFertileDayDate), date) }];
+    let diff = differenceInCalendarDays(new Date(lastFertileDayDate), date);
+    
+    if(diff === 1) return ['cycle_next_up_fertility_window_end_tomorrow', {}]
+    if(diff === 0) return ['cycle_next_up_fertility_window_end_today', {}]
+    
+    return ['cycle_next_up_fertility_window_end', { days: diff }]
   }
 
   // BETWEEN [ovulation] AND [last day of fertility window]
   if(cycleStatus === CYCLE_STATUSES.FERTILITY_WINDOW && isAfter(date, new Date(ovulationDayDate))) {
-    return ['cycle_next_up_fertility_window_end', { days: differenceInCalendarDays(new Date(lastFertileDayDate), date) }];
+    let diff = differenceInCalendarDays(new Date(lastFertileDayDate), date);
+    
+    if(diff === 1) return ['cycle_next_up_fertility_window_end_tomorrow', {}]
+    if(diff === 0) return ['cycle_next_up_fertility_window_end_today', {}]
+    
+    return ['cycle_next_up_fertility_window_end', { days: diff }]
   }
   
   // BETWEEN [last day of fertility window] and 
   if(CYCLE_STATUSES.POST_MENSTRUATION) {
     // is first period (prediction)
     if(isBefore(date, new Date(ovulationDayDate))) {
-      return ['cycle_next_up_fertility_window_start', { days: differenceInCalendarDays(new Date(firstFertileDayDate), date) }]
+      let diff = differenceInCalendarDays(new Date(firstFertileDayDate), date);
+
+      if(diff === 1) return ['cycle_next_up_fertility_window_start_tomorrow', {}]
+      if(diff === 0) return ['cycle_next_up_fertility_window_start_today', {}]
+      
+      return ['cycle_next_up_fertility_window_start', { days: diff }]
     }
     // is second period (prediction)
     if(isWithinInterval(date, { start: new Date(firstDayDateOf2ndPeriod), end: new Date(lastDayDateOf2ndPeriod) })) {
@@ -365,7 +441,12 @@ export const getCycleNextUp = ({ date, entries, periodWindows, periodLength, cyc
   
   // BETWEEN [last day of fertility window] AND [next period]
   if(CYCLE_STATUSES.PRE_MENSTRUATION) {
-    return ['cycle_next_up_period_start', { days: differenceInCalendarDays(new Date(firstDayDateOf2ndPeriod), date) }]
+    let diff = differenceInCalendarDays(new Date(firstDayDateOf2ndPeriod), date);
+    if(diff > 0) {
+      if(diff === 1) return ['cycle_next_up_period_start_tomorrow', {}]
+      return ['cycle_next_up_period_start', { days: diff }]
+    }
+    return ['cycle_next_up_period_late', { days: -1 * diff }]
   }
 
   return null;

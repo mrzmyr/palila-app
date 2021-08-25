@@ -1,7 +1,9 @@
-import React from "react";
+import { isBefore, isSameDay } from "date-fns";
+import React, { useMemo } from "react";
 import { Pressable, View, Text } from "react-native";
 import Colors from "../constants/Colors";
 import { PredictionType } from "../types/tracking";
+import CalendarDayDot from "./CalendarDayDot";
 
 const fertileTypeColors = {
   1: Colors.light.codes.fertilityPrediction,
@@ -9,25 +11,9 @@ const fertileTypeColors = {
   3: Colors.light.codes.ovulationPrediction,
 }
 
-let i = 0;
-
-function CalendarDayDot({ color }) {
-  return (
-      <View style={{
-        marginRight: 1,
-        marginLeft: 1,
-        borderRadius: 5,
-        width: 10,
-        height: 10,
-        backgroundColor: color,
-      }}></View>
-  );
-}
-
 const hasSymptom = (entry, type) => {
   return Object.keys(entry.symptoms).filter(key => key.includes(type)).some(key => entry.symptoms[key])
 }
-
 
 export default ({ marking, date, onPress }) => {
   
@@ -38,10 +24,10 @@ export default ({ marking, date, onPress }) => {
     
     if(marking.prediction.type === PredictionType.Fertility) {
       containerStyles = { backgroundColor: fertileTypeColors[marking.prediction.fertilityType] }
-      textStyles = { color: Colors.light.text }
+      textStyles = { color: marking.prediction.fertilityType === 3 ? '#FFF' : Colors.light.text }
     }
     if(marking.prediction.type === PredictionType.PMS) {
-      containerStyles = { backgroundColor: '#FFE7BA' }
+      containerStyles = { backgroundColor: Colors.light.codes.pmsPrediction }
       textStyles = { color: Colors.light.text }
     }
     if(marking.prediction.type === PredictionType.Period) {
@@ -57,8 +43,6 @@ export default ({ marking, date, onPress }) => {
     }
   }
 
-  // console.log(++i, 'CalendarDay rerender')
-  
    return (
      <Pressable 
        onPress={() => onPress(date)}
@@ -70,35 +54,26 @@ export default ({ marking, date, onPress }) => {
            marginTop: -8, 
            flexBasis: 40, 
            justifyContent: 'center',
+           opacity: pressed ? 0.5 : 1,
          },
         //  pressed ? { borderColor: Colors.light.red[1] } : {}
        ]}
      >
-      {marking && marking.isCurrentDate && 
-        <View style={{
-          position: "absolute",
-          left: -5,
-          borderRadius: 60,
-          width: 50,
-          height: 50,
-          borderWidth: 3,
-          borderColor: Colors.light.codes.period
-        }}></View>
-      }
         <View
           style={{
             flex: 1,
             flexDirection: "column",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
           }}
         >
           <Text 
             style={[
               textStyles, { 
-                fontSize: 16, 
+                fontSize: 15, 
                 textAlign: 'center', 
-                opacity: new Date() < new Date(date.dateString) ? 0.4 : 1
+                fontWeight: isSameDay(new Date(date.dateString), new Date()) ? 'bold': 'normal',
+                opacity: isBefore(new Date(), new Date(date.dateString)) && !isSameDay(new Date(), new Date(date.dateString)) ? 0.3 : 1
               }
             ]}
           >
@@ -112,6 +87,17 @@ export default ({ marking, date, onPress }) => {
           { marking && marking.entry && marking.entry.symptoms && hasSymptom(marking.entry, 'intercourse') && <CalendarDayDot color={Colors.light.trackingOptions.intercourse} /> }
           </View>
         </View>
+        {marking?.isCurrentDate && 
+          <View style={{
+            position: "absolute",
+            left: -5,
+            borderRadius: 60,
+            width: 50,
+            height: 50,
+            borderWidth: 3,
+            borderColor: 'rgba(0,0,0,0.1)',
+          }}></View>
+        }
      </Pressable>
    );
 }

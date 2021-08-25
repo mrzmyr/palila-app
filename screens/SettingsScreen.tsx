@@ -3,21 +3,38 @@ import { View, ScrollView, StyleSheet, Pressable, Alert, Text, Image, Dimensions
 
 import { useTracking } from '../services/useTracking';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
+import { Feather } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 
-import Card from '../components/Card';
+const openLink = async (link: string) => {
+  await WebBrowser.openBrowserAsync(link);
+};
 import Headline from '../components/Headline';
 
 import Constants from 'expo-constants';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { AntDesign, Entypo, SimpleLineIcons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { getCycleLengthStatus, getPeriodLengthStatus } from '../services/TrackingService';
-import { CYCLE_LENGTH_STATUS, PERIOD_LENGTH_STATUS } from '../types/tracking';
+import { CYCLE_LENGTH_STATUS, PERIOD_LENGTH_STATUS, TrackingEntry } from '../types/tracking';
+import MenuList from '../components/MenuList';
+import MenuListItem from '../components/MenuListItem';
+import { useNavigation } from '@react-navigation/native';
 
-function Stats({ title, statusText = null, statusIcon = null, number, numberSuffix, containerStyles }) {
+function Stats({ title, onPressInfo = null, statusText = null, statusIcon = null, number, numberSuffix, containerStyles }) {
   return (
     <View style={{ ...styles.statsContainer, ...containerStyles }}>
       <Text style={styles.statsTitle}>{title}</Text>
+      <View style={{
+        position: 'absolute', 
+        right: 10, 
+        top: 5,
+        padding: 10,
+      }}>
+      {/* <Feather onPress={onPressInfo} name="info" size={20} color="rgba(0,0,0,0.3)" /> */}
+      </View>
       <Text style={styles.statsNumber}>{number} {numberSuffix && numberSuffix}</Text>
       <View style={styles.statsStatus}>
         {statusIcon}
@@ -27,64 +44,82 @@ function Stats({ title, statusText = null, statusIcon = null, number, numberSuff
   );
 }
 
+
+let openShareDialogAsync = async (uri) => {
+  if (!(await Sharing.isAvailableAsync())) {
+    alert(`Uh oh, sharing isn't available on your platform`);
+    return;
+  }
+
+  await Sharing.shareAsync(uri);
+}; 
+
+const importEntries = async () => {
+  let doc = await DocumentPicker.getDocumentAsync({ type: "application/json", copyToCacheDirectory: true });
+  let contents = await FileSystem.readAsStringAsync(doc.uri);
+  return JSON.parse(contents);
+}
+
+const exportEntries = async (entries: TrackingEntry[]) => {
+  await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + `export.json`, JSON.stringify(entries));
+  openShareDialogAsync(FileSystem.documentDirectory + `export.json`)
+}
+
 export default function SettingsScreen() {
   
   const { t } = useTranslation();
-  const { state: { periodWindows, cycleLength, periodLength }, dispatch } = useTracking();
+  const { state: { entries, periodWindows, cycleLength, periodLength }, dispatch } = useTracking();
 
-  const askToReset = () =>
-  Alert.alert(
-    "Erase all data",
-    "All tracked data including periods, symptoms and other features will be permanently deleted.",
-    [
-      {
-        text: "Reset my data",
-        onPress: () => dispatch({ type: 'reset_entries' }),
-        style: "destructive"
-      },
-      { 
-        text: "Cancel", onPress: () =>  {},
-        style: "cancel"
-      }
-    ],
-    { cancelable: true }
-  );
+  const navigation = useNavigation();
+
+  const askToReset = () => {    
+    Alert.alert(
+      t('screens_settings_delete_data_modal_title'),
+      t('screens_settings_delete_data_modal_body'),
+      [
+        {
+          text: t('screens_settings_delete_data_modal_confirm'),
+          onPress: () => {
+            dispatch({ type: 'reset_entries' })
+            showMessage({
+              message: t('screens_settings_delete_data_modal_notification'),
+            });
+          },
+          style: "destructive"
+        },
+        { 
+          text: t('screens_settings_delete_data_modal_cancel'), 
+          onPress: () =>  {},
+          style: "cancel"
+        }
+      ],
+      { cancelable: true }
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
-      <Image source={require('../assets/images/mood-meditation.png')} style={{ marginTop: 15, borderRadius: 10, width: Dimensions.get('window').width-40, height: (Dimensions.get('window').width-40)/1.5 }} />
-      <Headline level={3}>{t('home_last_cycles_headline')}</Headline>
-      {periodWindows.map((pw, i) => {
-        return (
-          <Card key={i}>
-            <Text style={{ fontSize: 15 }}>
-              <Text style={{ fontWeight: "bold" }}>{periodWindows.length-i}. Period&nbsp;&nbsp;</Text>
-              <Text>{format(new Date(pw[0].date), "EE, dd.MM.yyyy")} - {format(new Date(pw[pw.length - 1].date), "EE, dd.MM.yyyy")}</Text>
-            </Text>
-          </Card>
-        )
-      })}
-      {periodWindows.length === 0 && <Text style={{ opacity: 0.5 }}>No cycles tracked until now.</Text>}
-      <Headline level={3}>{t('home_status_headline')}</Headline>
+      <Headline level={4}>{t('screens_settings_your_cycles')}</Headline>
       <View style={styles.statsRow}>
         <Stats
           containerStyles={{ marginRight: 10 }}
-          title={t('average_cycle_length')} 
-          number={cycleLength} 
-          numberSuffix={t('unit_days')}
-          statusText={t(`cycle_length_status_${getCycleLengthStatus(cycleLength)}`)}
+          title={t('common_average_cycle_length')} 
+          number={cycleLength}
+          numberSuffix={t('common_unit_days')}
+          onPressInfo={() => navigation.navigate('SettingsWebViewScreen', { uri: t('links_faq') } )}
+          statusText={t(`common_cycle_length_status_${getCycleLengthStatus(cycleLength)}`)}
           statusIcon={
-            cycleLength < 15 ? <Text>🤯&nbsp;</Text> :
             getCycleLengthStatus(cycleLength) === CYCLE_LENGTH_STATUS.NORMAL ?
             <AntDesign style={styles.statsStatusIcon} name="checkcircle" size={16} color="#389E0D" /> :
             <Entypo style={styles.statsStatusIcon} name="warning" size={16} color="#FFAB08" />
           }
           ></Stats>
         <Stats 
-          title={t('average_period_length')} 
+          title={t('common_average_period_length')} 
           number={periodLength} 
-          numberSuffix={t('unit_days')}
-          statusText={t(`period_length_status_${getPeriodLengthStatus(periodLength)}`)}
+          numberSuffix={t('common_unit_days')}
+          onPressInfo={() => navigation.navigate('SettingsWebViewScreen', { uri: t('links_period_length') } )}
+          statusText={t(`common_period_length_status_${getPeriodLengthStatus(periodLength)}`)}
           statusIcon={
             getPeriodLengthStatus(periodLength) === PERIOD_LENGTH_STATUS.NORMAL ?
             <AntDesign style={styles.statsStatusIcon} name="checkcircle" size={16} color="#389E0D" /> :
@@ -92,14 +127,56 @@ export default function SettingsScreen() {
           }
         ></Stats>
       </View>
+      <Headline level={4}>{t('screens_settings_your_data')}</Headline>
+      <MenuList>
+        <MenuListItem
+          title={t('screens_settings_your_data_export')}
+          onPress={() => exportEntries(entries)}
+          icon={<AntDesign name="upload" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+        <MenuListItem
+          title={t('screens_settings_your_data_import')}
+          onPress={async () => {
+            let newEntries = await importEntries()
+            dispatch({ type: 'import_entries', payload: { entries: newEntries } })
+          }}
+          icon={<AntDesign name="download" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+        <MenuListItem
+          title={t('screens_settings_your_data_delete_data')}
+          onPress={() => askToReset()}
+          icon={<AntDesign name="delete" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+      </MenuList>
+      <Headline level={4}>{t('screens_settings_help')}</Headline>
+      <MenuList>
+        <MenuListItem
+          title={t('screens_settings_help_faq')}
+          onPress={() => navigation.navigate('SettingsWebViewScreen', { uri: t('links_faq') } )}
+          icon={<AntDesign name="right" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+        <MenuListItem
+          title={t('screens_settings_help_restart_intro')}
+          onPress={() =>   navigation.navigate('IntroScreen')}
+          icon={<SimpleLineIcons name="screen-smartphone" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+      </MenuList>
+      <Headline level={4}>{t('screens_settings_about')}</Headline>
+      <MenuList>
+        <MenuListItem
+          title={t('screens_settings_about_tos')}
+          onPress={() => navigation.navigate('SettingsWebViewScreen', { uri: t('links_terms_of_use') } )}
+          icon={<AntDesign name="right" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+        <MenuListItem
+          title={t('screens_settings_about_privacy')}
+          onPress={() => navigation.navigate('SettingsWebViewScreen', { uri: t('links_privacy_policy') } )}
+          icon={<AntDesign name="right" size={18} color="rgba(0,0,0,0.2)" />}
+        ></MenuListItem>
+      </MenuList>
       <View style={{ height: 20 }} />
-      <View style={{ flex: 1, alignItems: "center" }}>
-      <Pressable style={{ paddingTop: 15, paddingBottom: 15, paddingLeft: 20, paddingRight: 20, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.1)', width: "50%" }} onPress={() => askToReset()}>
-        <Text style={{ textAlign: "center" }}>Reset</Text>
-      </Pressable>
-      </View>
+      <Text style={{ color: 'rgba(0,0,0,0.5)', textAlign: "center" }}>{t('screens_settings_app_version')}: {Constants.manifest?.version}</Text>
       <View style={{ height: 20 }} />
-      <Text style={{ color: '#999', textAlign: "center" }}>App Version: {Constants.manifest?.version}</Text>
     </ScrollView>
   );
 }
@@ -123,7 +200,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flex: 1,
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
     flexDirection: "row",
   },
   statsContainer: {
@@ -133,14 +210,16 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     paddingLeft: 15,
     paddingRight: 15,
+    flex: 0.5,
   },
   statsTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
+    width: "80%",
   },
   statsNumber: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold"
   },
   statsStatus: {

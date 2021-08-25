@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Button, FlatList, Dimensions } from "react-native";
+import { StyleSheet, View, FlatList, Dimensions, Pressable, Text, Platform } from "react-native";
 
 import TrackingOptionsBleeding from '../components/TrackingOptionsBleeding';
 import TrackingOptionsIntercourse from '../components/TrackingOptionsIntercourse';
 import TrackingOptionsPain from '../components/TrackingOptionsPain';
 import TrackingOptionsEmotion from '../components/TrackingOptionsEmotion';
 import TrackingOptionButton from '../components/TrackingOptionButton';
-import { format } from "date-fns";
+import { format } from '../services/i18n';
 import Colors from "../constants/Colors";
 import Headline from "../components/Headline";
 import { get } from "../constants/Icons";
 import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/core";
 
 enum TrackingCategories {
   period = 1,
@@ -59,35 +60,43 @@ export default function TrackingScreen({ onPressClose, trackingOptions, saveEntr
   return (
     <View style={{ flex: 1 }}>
       <View style={{
-        marginTop: 15,
         flexDirection: "row",
         justifyContent: "flex-end",
-        backgroundColor: '#FFF',
-        paddingTop: 20,
-        paddingBottom: 5,
+        backgroundColor: Colors.light.background,
+        paddingTop: Platform.select({ ios: 44 + 10, android: 0 + 10 }),
+        // paddingBottom: 5,
         paddingLeft: 20,
         paddingRight: 20,
       }}>
-        <Button
-          onPress={() => {
-            setCategorySelected(1)
-            onPressClose()
-          }}
-          title="Done"
-          accessibilityLabel="Learn more about this purple button"
-        ></Button>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Pressable 
+            style={({ pressed }) => [{
+              paddingLeft: 15, 
+              paddingRight: 15,
+              paddingTop: 8,
+              paddingBottom: 8,
+              borderRadius: 5,
+              marginRight: 0,
+              backgroundColor: 'rgba(0,0,0,0.05)',
+            }, pressed ? { backgroundColor: 'rgba(0,0,0,0.1)' } : {}]}
+            onPress={() => onPressClose()}
+          >
+            <Text style={{ fontSize: 18 }}>{t('common_save')}</Text>
+          </Pressable>
+        </View>
       </View>
       <View style={styles.modalView}>
       <Headline style={{ 
           paddingLeft: 20,
           paddingRight: 20,
+          paddingTop: 10,
         }} 
         level={2}
       >{format(new Date(trackingOptions.date), 'iiii, dd. MMM')}</Headline>
         
       <View style={{ flexDirection: "row", width: "100%", paddingLeft: 20, paddingRight: 20 }}>
         <TrackingOptionButton
-          label={t(`tracking_option_bleeding_headline`)}
+          label={t(`common_tracking_option_bleeding_headline`)}
           styleLabel={{ fontSize: 15 }}
           icon={get('tracking_option_bleeding_1', { size: 30, color: Colors.light.trackingOptions.bleeding })}
           style={[
@@ -100,7 +109,7 @@ export default function TrackingScreen({ onPressClose, trackingOptions, saveEntr
           }}
         />
         <TrackingOptionButton
-          label={t(`tracking_option_intercourse_headline`)}
+          label={t(`common_tracking_option_intercourse_headline`)}
           styleLabel={{ fontSize: 15 }}
           icon={get('tracking_option_intercourse_1', { size: 30, color: Colors.light.trackingOptions.intercourse })}
           style={[
@@ -113,7 +122,7 @@ export default function TrackingScreen({ onPressClose, trackingOptions, saveEntr
           }}
         />
         <TrackingOptionButton
-          label={t(`tracking_option_pain_headline`)}
+          label={t(`common_tracking_option_pain_headline`)}
           styleLabel={{ fontSize: 15 }}
           icon={get('tracking_option_pain_1', { size: 30, color: Colors.light.trackingOptions.pain })}
           style={[
@@ -126,7 +135,7 @@ export default function TrackingScreen({ onPressClose, trackingOptions, saveEntr
           }}
         />
         <TrackingOptionButton
-          label={t(`tracking_option_emotion_headline`)}
+          label={t(`common_tracking_option_emotion_headline`)}
           styleLabel={{ fontSize: 15 }}
           icon={get('tracking_option_emotion_1', { size: 30, color: Colors.light.trackingOptions.emotion })}
           style={[

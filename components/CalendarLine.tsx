@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 
-import { add, format, isSameDay } from 'date-fns';
+import { format } from '../services/i18n';
+import { add, isSameDay } from 'date-fns';
 import Colors from '../constants/Colors';
 import { useTracking } from '../services/useTracking';
 import { getDayStatus } from '../services/TrackingService';
 
-export default function CalendarLine({ startDate, todayDate = new Date(), selectedDate = new Date(), onPress = () => {} }) {
+export default function CalendarLine({ startDate, style = {}, todayDate = new Date(), selectedDate = new Date(), onPress }) {
 
   const { state } = useTracking();
 
@@ -17,12 +18,12 @@ export default function CalendarLine({ startDate, todayDate = new Date(), select
   }
   
   return (
-    <View style={styles.calendarLine}>
+    <View style={[styles.calendarLine, style]}>
       <View style={styles.weekdaysContainer}>
         {days.map(date => {
           return (
-            <View key={date} style={{...styles.weekdayContainer, ...{ backgroundColor: isSameDay(date, todayDate) ? 'white' : 'white' }}}>
-              <Text style={{...styles.weekdayText, ...{ fontWeight: isSameDay(date, todayDate) ? 'bold' : 'normal' }}}>{format(date, "E")}</Text>
+            <View key={date.toString()} style={{...styles.weekdayContainer }}>
+              <Text style={[styles.weekdayText]}>{format(date, "eeeee")}</Text>
             </View>
           )}
         )}
@@ -33,9 +34,6 @@ export default function CalendarLine({ startDate, todayDate = new Date(), select
           let details = getDayStatus(date, state.entries, state.periodWindows, state.periodLength, state.cycleLength, state.ovulationDistance);
 
           if(details !== null) {
-            if(details.periodPrediction) {
-              additionalStyles.backgroundColor = Colors.light.codes.periodPrediction;
-            }
             if(details.fertilePrediciton) {
               additionalStyles.backgroundColor = Colors.light.codes.fertilityPrediction;
             }
@@ -45,13 +43,22 @@ export default function CalendarLine({ startDate, todayDate = new Date(), select
             if(details.pmsPrediction) {
               additionalStyles.backgroundColor = Colors.light.codes.pmsPrediction;
             }
+            if(details.periodPrediction) {
+              additionalStyles.backgroundColor = Colors.light.codes.periodPrediction;
+            }
             if(details.period) {
               additionalStyles.backgroundColor = Colors.light.codes.period;
             }
           }
         
           return (
-            <Pressable key={date} onPress={() => onPress(date)}>
+            <Pressable 
+              key={date.toString()} 
+              onPress={() => onPress(date)}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1
+              })}
+            >
               <View style={{...styles.weekdateContainer, ...additionalStyles}}>
                 {isSameDay(date, selectedDate) && 
                   <View style={{
@@ -61,15 +68,16 @@ export default function CalendarLine({ startDate, todayDate = new Date(), select
                     width: 50,
                     height: 50,
                     borderWidth: 3,
-                    borderColor: Colors.light.codes.period,
+                    borderColor: '#000',
+                    opacity: 0.1
                   }}></View>
                 }
-                
                 <Text 
-                  style={{...styles.weekdateText, ...{ 
+                  style={[{
+                    fontSize: isSameDay(date, todayDate) ? 18 : 15, 
                     fontWeight: isSameDay(date, todayDate) ? 'bold' : 'normal', 
-                    color: additionalStyles.backgroundColor === Colors.light.codes.period ? 'white' : Colors.light.text,
-                  }}}
+                    color:  [Colors.light.codes.ovulationPrediction, Colors.light.codes.period].includes(additionalStyles.backgroundColor) ? 'white' : Colors.light.text,
+                  }]}
                 >{format(date, "dd")}</Text>
               </View>
             </Pressable>
@@ -82,11 +90,11 @@ export default function CalendarLine({ startDate, todayDate = new Date(), select
 
 const styles = StyleSheet.create({
   calendarLine: {
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
     fontSize: 16,
     // fontWeight: "bold",
-    paddingTop: 15,
-    paddingBottom: 15,
+    // paddingTop: 15,
+    // paddingBottom: 15,
     borderRadius: 10,
     justifyContent: "flex-start"
   },
@@ -94,16 +102,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-evenly",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   weekdayContainer: {
     alignItems: "center",
     justifyContent: "center",
-    // fontWeight: "bold",
     width: 40,
   },
   weekdayText: {
-    // fontWeight: "bold",
     fontSize: 12,
   },
   weekdatesContainer: {
@@ -115,13 +121,8 @@ const styles = StyleSheet.create({
   weekdateContainer: {
     alignItems: "center",
     justifyContent: "center",
-    // fontWeight: "bold",
     height: 40,
     width: 40,
     borderRadius: 100,
-  },
-  weekdateText: {
-    // fontWeight: "bold",
-    fontSize: 16,
   },
 })

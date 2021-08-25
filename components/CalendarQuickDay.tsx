@@ -1,3 +1,4 @@
+import { isSameDay } from "date-fns";
 import React from "react";
 import { Pressable, Text } from "react-native";
 
@@ -26,7 +27,13 @@ export default ({ date, marking, onPress }) => {
         //  pressed && new Date() > new Date(date.dateString) ? { backgroundColor: '#EEE' } : {}
        ]}
      >
-       <Text style={{ ...textStyles, fontSize: 16, textAlign: 'center', color: new Date() < new Date(date.dateString) ? 'grey' : textStyles.color }}>
+       <Text style={{ 
+         ...textStyles, 
+         fontSize: 16, 
+         textAlign: 'center', 
+         color: new Date() < new Date(date.dateString) ? 'grey' : textStyles.color,
+         fontWeight: isSameDay(new Date(date.dateString), new Date()) ? 'bold': 'normal',
+      }}>
          {date.day}
        </Text>
      </Pressable>

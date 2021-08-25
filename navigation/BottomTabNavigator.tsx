@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import * as React from 'react';
 
 import Colors from '../constants/Colors';
@@ -7,141 +8,208 @@ import useColorScheme from '../hooks/useColorScheme';
 import OverviewScreen from '../screens/OverviewScreen';
 import CalendarScreenFull from '../screens/CalendarScreenFull';
 import CalendarQuickScreen from '../screens/CalendarQuickScreen';
+import CalendarHelpScreen from '../screens/CalendarHelpScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import TrackScreen from '../screens/TrackScreen';
+import IntroScreen from '../screens/IntroScreen';
+import WebViewScreen from '../screens/WebViewScreen';
 import { BottomTabParamList, TabOneParamList, TabTwoParamList } from '../types';
-import { Ionicons, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTracking } from '../services/useTracking';
-import { View, Button, Pressable, Text } from 'react-native';
+import { Ionicons, AntDesign, Entypo } from '@expo/vector-icons';
+import { View, Pressable, Text, Platform } from 'react-native';
+import { Feather } from '@expo/vector-icons'; 
+import { useTranslation } from 'react-i18next';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator({ navigation }) {
   const colorScheme = useColorScheme();
-  const tracking = useTracking();
+  const { t } = useTranslation();
 
+  const iconColor = colorScheme === 'light' ? '#000' : '#FFF';
+  
   return (
     <BottomTab.Navigator
-      initialRouteName="Overview"
-      tabBarOptions={{ 
-        activeTintColor: Colors[colorScheme].tint 
+      initialRouteName={t('screens_overview_tabTitle')}
+      screenOptions={{
       }}>
       <BottomTab.Screen
-        name="Overview"
+        name={t('screens_overview_tabTitle')}
         component={OverviewScreenNavigator}
         options={{
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="power-cycle" size={24} color={Colors[colorScheme].text} />,
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => <Entypo style={{ marginTop: 5, marginBottom: 5, opacity: focused ? 1 : 0.5 }} name="home" size={24} color={iconColor} />,
+          tabBarLabel: () => {},
         }}
       />
-      {/* <BottomTab.Screen
-        name="Track"
-        component={TabTwoNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <AntDesign name="pluscircle" size={30} color={Colors.light.red[1]} />,
-        }}
-      /> */}
       <BottomTab.Screen
-        name="Calendar"
+        name={t('screens_calendar_tabTitle')}
         component={CalendarScreenFullNavigator}
         options={{
-          tabBarIcon: ({ color }) => <AntDesign name="calendar" size={24} color={Colors[colorScheme].text} />,
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => <Entypo style={{ marginTop: 5, marginBottom: 5, opacity: focused ? 1 : 0.5 }} name="calendar" size={24} color={iconColor} />,
+          tabBarLabel: () => {},
         }}
       />
       <BottomTab.Screen
-        name="Settings"
+        name={t('screens_settings_tabTitle')}
         component={SettingsScreenNavigator}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="cog" size={24} color={Colors[colorScheme].text} />,
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => <Entypo style={{ marginTop: 5, marginBottom: 5, opacity: focused ? 1 : 0.5 }} name="cog" size={24} color={iconColor} />,
+          tabBarLabel: () => {},
         }}
       />
     </BottomTab.Navigator>
   );
 }
 
-// You can explore the built-in icon families and icons on the web at:
-// https://icons.expo.fyi/
-function TabBarIcon(props: { name: React.ComponentProps<typeof Ionicons>['name']; color: string }) {
-  return <Ionicons size={30} style={{ marginBottom: -3 }} {...props} />;
-}
-
-// Each tab has its own navigation stack, you can read more about this pattern here:
-// https://reactnavigation.org/docs/tab-based-navigation#a-stack-navigator-for-each-tab
-const TabOneStack = createStackNavigator<TabOneParamList>();
+const CalendarStack = createNativeStackNavigator<TabOneParamList>();
 
 function CalendarScreenFullNavigator({ navigation }) {
+  const { t } = useTranslation();
+
+  const colorScheme = useColorScheme();
+  const iconColor = colorScheme === 'light' ? '#000' : '#FFF';
+  
   return (
-    <TabOneStack.Navigator>
-      <TabOneStack.Screen
+    <CalendarStack.Navigator>
+      <CalendarStack.Screen
         name="CalendarScreenFull"
         component={CalendarScreenFull}
         options={{ 
-          headerTitle: `Calendar`,
+          headerTitle: t('screens_calendar_title'),
+          headerRight: () => (
+            <Pressable 
+            style={({ pressed }) => [{
+              padding: 7, borderRadius: 5, marginRight: -10,
+            }, pressed ? { backgroundColor: '#EEE' } : {}]}
+            onPress={() => navigation.navigate('CalendarHelpScreen')}>
+              <Feather name="info" size={24} color={iconColor} />
+            </Pressable>
+          ),
         }}
       />
-    </TabOneStack.Navigator>
-  );
-}
-
-const TabTwoStack = createStackNavigator<TabTwoParamList>();
-
-function TabTwoNavigator() {
- 
-  return (
-    <TabTwoStack.Navigator>
-      <TabTwoStack.Screen
-        name="TrackScreen"
-        component={TrackScreen}
-        options={{ headerTitle: `Track` }}
+      <CalendarStack.Screen
+        name="CalendarHelpScreen"
+        component={CalendarHelpScreen}
+        options={{ 
+          headerTitle: 'Help',
+          presentation: 'modal',
+          headerLeft: () => {},
+          headerRight: () => (
+            <Pressable 
+            style={({ pressed }) => [{
+              padding: 5, borderRadius: 5, marginRight: 10,
+              opacity: Platform.select({ ios: 1, android: 0 }),
+            }, pressed ? { backgroundColor: '#EEE' } : {}]}
+            onPress={() => navigation.navigate('CalendarScreenFull')}>
+              <AntDesign name="close" size={24} color={iconColor} />
+            </Pressable>
+          ),
+        }}
       />
-    </TabTwoStack.Navigator>
+    </CalendarStack.Navigator>
   );
 }
+
+const OverviewStack = createNativeStackNavigator<TabTwoParamList>();
 
 function OverviewScreenNavigator({ navigation }) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
-  const tracking = useTracking()
+  const textColor = colorScheme === 'light' ? '#000' : '#FFF';
   
   return (
-    <TabTwoStack.Navigator mode="modal">
-      <TabTwoStack.Screen
+    <OverviewStack.Navigator>
+      <OverviewStack.Screen
         name="OverviewScreen"
         component={OverviewScreen}
-        options={{ 
-          headerTitle: 'Overview',
+        options={{
+          headerStyle: {
+            height: 50
+          },
+          headerTitle: t('screens_overview_title'),
           headerRight: () => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Pressable onPress={() => navigation.navigate('CalendarQuickScreen')}>
-                <Text style={{ fontSize: 15, paddingLeft: 10, paddingRight: 10, marginRight: 10 }}>Add Period</Text>
+              <Pressable 
+               style={({ pressed }) => [{
+                  paddingLeft: 15, 
+                  paddingRight: 15,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                  borderRadius: 5,
+                  marginRight: -10,
+                  opacity: pressed ? 0.5 : 1
+                }]}
+                onPress={() => navigation.navigate('CalendarQuickScreen')}
+              >
+                <Text style={{ fontSize: 15, color: textColor }}>{t('screens_overview_add_period')}</Text>
               </Pressable>
             </View>
           ),
         }}
       />
-      <TabOneStack.Screen
+      <OverviewStack.Screen
         name="CalendarQuickScreen"
         component={CalendarQuickScreen}
         options={{ 
-          headerTitle: `Add Period`,
+          headerTitle: t('screens_overview_add_period'),
+          presentation: 'modal',
           headerLeft: () => {},
           headerRight: () => (
-            <Pressable style={{ padding: 5, borderRadius: 5, marginRight: 10, backgroundColor: '#EEE' }} onPress={() => navigation.navigate('OverviewScreen')}>
+            <Pressable 
+            style={({ pressed }) => [{
+              padding: 5, borderRadius: 5, marginRight: -10,
+              opacity: Platform.select({ ios: 1, android: 0 })
+            }, pressed ? { backgroundColor: '#EEE' } : {}]}
+            onPress={() => navigation.navigate('OverviewScreen')}>
               <AntDesign name="close" size={24} color={'grey'} />
             </Pressable>
           ),
         }}
       />
-    </TabTwoStack.Navigator>
+      <OverviewStack.Group screenOptions={{ presentation: 'formSheet' }}>
+        <OverviewStack.Screen 
+          name="OverviewWebViewScreen" 
+          component={WebViewScreen}
+          options={{ 
+            headerTitle: '',
+            headerRight: () => {
+              return <Pressable onPress={() => navigation.goBack()}><Ionicons name="close" size={18} color="black" /></Pressable>
+            }
+          }}
+        />
+      </OverviewStack.Group>
+    </OverviewStack.Navigator>
   );
 }
 
-function SettingsScreenNavigator() {
+const SettingsStack = createNativeStackNavigator();
+
+function SettingsScreenNavigator({ navigation }) {
+  const { t } = useTranslation();
+  
   return (
-    <TabTwoStack.Navigator>
-      <TabTwoStack.Screen
+    <SettingsStack.Navigator>
+      <SettingsStack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
-        options={{ headerTitle: 'Settings' }}
+        options={{ headerTitle: t('screens_settings_title') }}
       />
-    </TabTwoStack.Navigator>
+      <SettingsStack.Group screenOptions={{ presentation: 'fullScreenModal', headerShown: false }}>
+        <SettingsStack.Screen name="IntroScreen" component={IntroScreen} />
+      </SettingsStack.Group>
+      <SettingsStack.Group screenOptions={{ presentation: 'formSheet' }}>
+        <SettingsStack.Screen 
+          name="SettingsWebViewScreen" 
+          component={WebViewScreen}
+          options={{ 
+            headerTitle: '',
+            headerRight: () => {
+              return <Pressable onPress={() => navigation.goBack()}><Ionicons name="close" size={18} color="black" /></Pressable>
+            }
+          }}
+        />
+      </SettingsStack.Group>
+    </SettingsStack.Navigator>
   );
 }

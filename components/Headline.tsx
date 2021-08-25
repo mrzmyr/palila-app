@@ -11,12 +11,12 @@ export default function Headline({ level = 3, children, ...props }) {
 
 const styles = StyleSheet.create({
   headlineContainer: {
+    paddingTop: 25,
+    paddingBottom: 15,
   },
   headline: {
     fontSize: 16,
     fontWeight: "bold",
-    paddingTop: 25,
-    paddingBottom: 15,
   },
   headlineLevel1: {
     fontSize: 32,

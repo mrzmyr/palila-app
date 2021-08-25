@@ -15,16 +15,16 @@ export default function TrackingOptionsPain({ trackingSymptoms, setTrackingSympt
       <Headline
         style={{ paddingLeft: 20, paddingRight: 20 }}
         level={3}
-      >{t('tracking_option_pain_headline')}</Headline>
+      >{t('common_tracking_option_pain_headline')}</Headline>
       <View style={{ flexDirection: "row", width: "100%", paddingLeft: 20, paddingRight: 20 }}>
         <TrackingOptionButton
-          label={t(`tracking_option_pain_1`)}
+          label={t(`common_tracking_option_pain_1`)}
           icon={get(`tracking_option_pain_1`, { size: 40, color: Colors.light.trackingOptions.pain })}
           style={[trackingSymptoms.pain_1 ? { borderColor: Colors.light.trackingOptions.pain } : {}]}
           onPress={() => setTrackingSymptom('pain_1', !trackingSymptoms.pain_1 )}
         />
         <TrackingOptionButton
-          label={t(`tracking_option_pain_2`)}
+          label={t(`common_tracking_option_pain_2`)}
           icon={get(`tracking_option_pain_2`, { size: 40, color: Colors.light.trackingOptions.pain })}
           style={[trackingSymptoms.pain_2 ? { borderColor: Colors.light.trackingOptions.pain } : {}]}
           onPress={() => setTrackingSymptom('pain_2', !trackingSymptoms.pain_2 )}
@@ -32,13 +32,13 @@ export default function TrackingOptionsPain({ trackingSymptoms, setTrackingSympt
       </View>
       <View style={{ flexDirection: "row", width: "100%", paddingLeft: 20, paddingRight: 20, justifyContent: 'flex-start' }}>
         <TrackingOptionButton
-          label={t(`tracking_option_pain_3`)}
+          label={t(`common_tracking_option_pain_3`)}
           icon={get(`tracking_option_pain_3`, { size: 40, color: Colors.light.trackingOptions.pain })}
           style={[trackingSymptoms.pain_3 ? { borderColor: Colors.light.trackingOptions.pain } : {}]}
           onPress={() => setTrackingSymptom('pain_3', !trackingSymptoms.pain_3 )}
         />
         <TrackingOptionButton
-          label={t(`tracking_option_pain_4`)}
+          label={t(`common_tracking_option_pain_4`)}
           icon={get(`tracking_option_pain_4`, { size: 40, color: Colors.light.trackingOptions.pain })}
           style={[trackingSymptoms.pain_4 ? { borderColor: Colors.light.trackingOptions.pain } : {}]}
           onPress={() => setTrackingSymptom('pain_4', !trackingSymptoms.pain_4 )}

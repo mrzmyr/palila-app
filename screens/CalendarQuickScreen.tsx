@@ -7,8 +7,8 @@ import { CalendarList } from 'react-native-calendars';
 
 import Colors from '../constants/Colors';
 import CalendarQuickDay from '../components/CalendarQuickDay';
-import { format } from 'date-fns';
 import { TrackingEntry, DEFAULT_TRACKING_SYMPTOMS } from '../types/tracking';
+import { format } from '../services/i18n';
 
 const defaultTrackingOptions: TrackingEntry = {
   date: format(new Date(), 'yyyy-MM-dd'),
@@ -25,6 +25,10 @@ export default function CalendarScreenQuick() {
   useEffect(() => {
     setDots(getPeriodDots())
   }, [])
+
+  useEffect(() => {
+    setDots(getPeriodDots())
+  }, [state.entries])
 
   const onDayPress = (date) => {
     if(new Date() < new Date(date.dateString)) return;

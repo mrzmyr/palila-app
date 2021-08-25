@@ -6,7 +6,8 @@ import {
   getCycleStatus, 
   getFertilityPrediction, 
   getPeriodPredictionNextCycle,
-  getCycleNextUp
+  getCycleNextUp,
+  getPMSPrediction
 } from '../TrackingService'
 import '../_i18n'
 import { CYCLE_STATUSES } from '../../types/tracking';
@@ -134,6 +135,13 @@ test(`getAverageCycleLength`, () => {
   
   expect(tracking.current.state.cycleLength).toBe(19)
   expect(tracking.current.state.entries.length).toBe(20)
+})
+
+test(`getPMSPrediction`, () => {
+  let results = getPMSPrediction('2021-04-21', 5, 28);
+  expect(results[0].date).toBe('2021-05-18')
+  expect(results[1].date).toBe('2021-05-17')
+  expect(results[2].date).toBe('2021-05-16')
 })
 
 test(`getCycleStatus`, () => {
