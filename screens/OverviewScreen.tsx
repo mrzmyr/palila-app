@@ -212,7 +212,7 @@ export default function OverviewScreen() {
   let _flatListRef = null;
 
   const handleScroll = (event) => {
-    let index = event.nativeEvent.contentOffset.x / sliderWidth;
+    let index = Math.round(event.nativeEvent.contentOffset.x / sliderWidth);
     setCurrentDate(addDays(today, index + DAYS_OFFSET))
   }
 
