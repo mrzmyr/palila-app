@@ -73,6 +73,8 @@ This section should list any major frameworks that you built your project using.
 
 Possible future plans could do:
 
+- [ ] Refactor Algorithmns (and document)
+- [ ] Rebuild calendar (own components)
 - [ ] Fix bug which happens when tracking periods with 3+ days in specific cases
 - [ ] Integration of the [introduction screens](screens/IntroScreen.tsx)
 - [ ] Lock Orientation: https://docs.expo.io/versions/latest/sdk/screen-orientation/
