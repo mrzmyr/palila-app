@@ -24,14 +24,13 @@ export default function WebViewScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignSelf: 'stretch',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
   horizontal: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    // flexDirection: 'row',
+    // justifyContent: 'space-around',
   },
 });
