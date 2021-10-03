@@ -61,9 +61,11 @@ export interface PeriodPrediction {
   type: PredictionType.Period
 }
 
+export type FertilityPredictionType = [1,2,3]
+
 export interface FertilityPrediction {
   date: string,
-  fertilityType: 1 | 2 | 3,
+  fertilityType: FertilityPredictionType,
   type: PredictionType.Fertility
 }
 
