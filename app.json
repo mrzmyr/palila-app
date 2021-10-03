@@ -21,19 +21,17 @@
     "ios": {
       "supportsTablet": false,
       "requireFullScreen": true,
-      "bundleIdentifier": "palila.app"
+      "bundleIdentifier": "palila.app",
+      "buildNumber": "0.1.0"
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFF8F2"
       },
       "package": "palila.app",
-      "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "VIBRATE"
-      ]
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
