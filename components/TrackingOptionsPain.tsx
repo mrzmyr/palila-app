@@ -6,8 +6,19 @@ import TrackingOptionButton from './TrackingOptionButton';
 import { useTranslation } from 'react-i18next';
 import Headline from './Headline';
 import { get } from '../constants/Icons';
+import { ReactElement } from 'react-test-renderer/node_modules/@types/react';
 
-export default function TrackingOptionsPain({ trackingSymptoms, setTrackingSymptom }) {
+interface Props {
+  trackingSymptoms: {
+    pain_1: boolean,
+    pain_2: boolean,
+    pain_3: boolean,
+    pain_4: boolean,
+  },
+  setTrackingSymptom: any
+}
+
+export default function TrackingOptionsPain({ trackingSymptoms, setTrackingSymptom }: Props): ReactElement {
   const { t } = useTranslation();
   
   return (

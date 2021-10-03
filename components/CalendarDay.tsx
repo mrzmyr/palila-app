@@ -1,6 +1,7 @@
 import { isBefore, isSameDay } from "date-fns";
-import React, { useMemo } from "react";
-import { Pressable, View, Text } from "react-native";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
+import { ReactElement } from "react-test-renderer/node_modules/@types/react";
 import Colors from "../constants/Colors";
 import { PredictionType } from "../types/tracking";
 import CalendarDayDot from "./CalendarDayDot";
@@ -15,7 +16,19 @@ const hasSymptom = (entry, type) => {
   return Object.keys(entry.symptoms).filter(key => key.includes(type)).some(key => entry.symptoms[key])
 }
 
-export default ({ marking, date, onPress }) => {
+interface CalendarDayInterface {
+  marking: {
+    prediction: {
+      type: PredictionType,
+      fertilityType: Fertility
+    },
+    entry: any
+  },
+  date: string,
+  onPress(): any
+}
+
+export default function CalendarDay({ marking, date, onPress }: CalendarDayInterface): ReactElement {
   
   let textStyles = {};
   let containerStyles = {};

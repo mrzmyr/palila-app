@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import * as React from 'react';
 
-import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import OverviewScreen from '../screens/OverviewScreen';
 import CalendarScreenFull from '../screens/CalendarScreenFull';
@@ -94,7 +93,6 @@ function CalendarScreenFullNavigator({ navigation }) {
         options={{ 
           headerTitle: 'Help',
           presentation: 'modal',
-          headerLeft: () => {},
           headerRight: () => (
             <Pressable 
             style={({ pressed }) => [{
@@ -154,7 +152,6 @@ function OverviewScreenNavigator({ navigation }) {
         options={{ 
           headerTitle: t('screens_overview_add_period'),
           presentation: 'modal',
-          headerLeft: () => {},
           headerRight: () => (
             <Pressable 
             style={({ pressed }) => [{
