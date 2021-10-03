@@ -18,7 +18,7 @@
 ## About The Project
 
 <p align="center">
-  <img src="./assets/docs/preview.gif" width="180">
+  <img src="./assets/docs/preview.gif">
 </p>
 
 This app was written to learn the characteristics of the menstrual cycle and design possible algorithms to help keep track of it.
