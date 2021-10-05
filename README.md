@@ -28,7 +28,7 @@ The key questions this app aims to answer are:
 - When is my next menstruation?
 - What is the chance of getting pregnant right now?
 
-The app offers even more featueres:
+The app offers even more **featueres**:
 
 - Data is stored locally (not in the cloud).
 - Export and import data
@@ -37,6 +37,47 @@ The app offers even more featueres:
 - Symptom tracking
 - Prediction of next 3 periods
 - Predictions of PMS
+
+**Sitemap**
+
+- Home
+- Calendar
+- Calendar Help
+- Settings
+- Tracking
+- Introduction
+
+**Tracking**
+
+- Period
+  - Light
+  - Medium
+  - Strong
+  - Spotting
+- Emotion
+  - Emotion
+  - Happy
+  - Sad
+  - Sensitive
+  - PMS
+- Intercourse
+  - Unprotected
+  - Protected
+  - High Sex Drive
+  - Masturbation
+- Pain
+  - Cramps
+  - Headache
+  - Breast Tenderness
+  - Bloating
+
+**Design**
+
+https://www.figma.com/file/fqHoiqCQIPdG0kMGhGFwHy/Palila-App?node-id=0%3A1
+
+**Feature Comparison**
+
+https://y99.notion.site/5c32d3b258fc41f5b65403e94d3ebf65?v=ed163c764f7b4e268f935194a15c44a0
 
 A list of commonly used resources that I find helpful are listed in the acknowledgements.
 
