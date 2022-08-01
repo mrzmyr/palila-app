@@ -28,7 +28,7 @@ The key questions this app aims to answer are:
 - When is my next menstruation?
 - What is the chance of getting pregnant right now?
 
-The app offers even more **featueres**:
+The app offers even more **features**:
 
 - Data is stored locally (not in the cloud).
 - Export and import data
